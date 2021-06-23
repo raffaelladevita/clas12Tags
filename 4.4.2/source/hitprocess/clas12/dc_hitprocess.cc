@@ -97,8 +97,7 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 		dcc.vmid[sec][sl] = data[row][14];  // used in polynomial function only
 		//        cout << dcc.v0[sec][sl] << " " << dcc.deltanm[sec][sl] << " " << dcc.tmaxsuperlayer[sec][sl] << " " << dcc.R[sec][sl] << " " << dcc.vmid[sec][sl] << endl;
 	}
-
-
+	
 
 	// T0 corrections: a delay to be introduced (plus sign) to the TDC timing
 	sprintf(dcc.database, "/calibration/dc/time_corrections/T0Corrections:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
@@ -111,6 +110,19 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 		int slot   = data[row][2] - 1;
 		int cable  = data[row][3] - 1;
 		dcc.T0Correction[sec][sl][slot][cable] = data[row][4];
+	}
+	//********************************************
+
+
+	// TDC ranges
+	sprintf(dcc.database, "/daq/config/dc:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
+	data.clear();
+	calib->GetCalib(data,  dcc.database);
+
+	for(unsigned row = 0; row < data.size(); row++) {
+		int sl     = data[row][1] - 1;
+		int wire   = data[row][2] - 1;
+		dcc.tdcrange[sl][wire] = data[row][3];
 	}
 	//********************************************
 
@@ -311,6 +323,8 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 			//Get beta-value of the particle:
 			beta_particle = mom[s].mag()/E[s];
 
+			hit_signal_t = stepTime[s]/ns;
+
 		}
 	}
 	//******************************************************************
@@ -337,8 +351,11 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 
 	// cout << " DC TIME stime: " << smeared_time << " X: " << X << "  doca: " << doca/cm << "  dmax: " << dcc.dmaxsuperlayer[SLI] << "    tmax: " << dcc.tmaxsuperlayer[SECI][SLI] << "   alpha: " << alpha << "   thisMgnf: " << thisMgnf << " SECI: " << SECI << " SLI: " << SLI << endl;
 
+	// check if time is within readout range
+	bool inrange = (smeared_time>0 && smeared_time<dcc.tdcrange[SLI*6+LAY][nwire-1]);
+	
 	int ineff = 1;
-	if(random < ddEff || X > 1) ineff = -1;
+	if(random < ddEff || X > 1 || !inrange) ineff = -1;
 
 	// recording smeared and un-smeared quantities
 	dgtz["hitn"]       = hitn;
