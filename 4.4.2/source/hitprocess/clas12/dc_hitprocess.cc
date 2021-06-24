@@ -356,6 +356,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	
 	int ineff = 1;
 	if(random < ddEff || X > 1 || !inrange) ineff = -1;
+	
 
 	// recording smeared and un-smeared quantities
 	dgtz["hitn"]       = hitn;

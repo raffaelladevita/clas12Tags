@@ -102,6 +102,7 @@ MPrimaryGeneratorAction::MPrimaryGeneratorAction(goptions *opts)
 		cout << endl << hd_msg << " Number of Luminosity Particles: " << NP << endl;
 		cout << hd_msg << " Luminosity Time Window: " << TWINDOW/ns << " nanoseconds." << endl ;
 		cout << hd_msg << " Luminosity Time Between Bunches: " << TBUNCH/ns << " nanoseconds." << endl;
+		cout << hd_msg << " Primary Beam Particle Bunch Time: " << TSIGNAL/ns << " nanoseconds." << endl;
 	}
 
 	if(NP2>0) {
@@ -323,7 +324,7 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			particleGun->SetParticlePolarization(G4ThreeVector( polX, polY, polZ ));
 
 			// Primary particle generated int the middle of Time window
-			particleGun->SetParticleTime(TWINDOW/2);
+			particleGun->SetParticleTime(TSIGNAL);
 			particleGun->SetNumberOfParticles(1);
 			particleGun->GeneratePrimaryVertex(anEvent);
 			if(GEN_VERBOSITY > 3) {
@@ -733,7 +734,7 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 					}
 
 					// Primary particle generated int the middle of Time window
-					particleGun->SetParticleTime(TWINDOW/2);
+					particleGun->SetParticleTime(TSIGNAL);
 					particleGun->GeneratePrimaryVertex(anEvent);
 					if(GEN_VERBOSITY > 3)
 						cout << hd_msg << " Particle Number:  " << p << ", id=" << stdhep_reader->pid(p) << "(" << Particle->GetParticleName() << ")"
@@ -802,15 +803,9 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	// Luminosity Particles
 	int NBUNCHES   = (int) floor(TWINDOW/TBUNCH);
-	int PBUNCH     = (int) floor((double)NP/NBUNCHES) - 1;
-
-
-	// there will be some remaining particles, these will be added at the last bunch
-	int NREMAINING = NP - NBUNCHES*PBUNCH;
-
-	// cout << PBUNCH << " " << NBUNCHES <<  " " << NBUNCHES*PBUNCH << " " << NREMAINING << endl;
-
-	if(PBUNCH > 0)
+	vector<int> BUNCHES = setBunches(NP,NBUNCHES);
+	
+	if(NP > 0)
 	{
 		particleGun->SetParticleDefinition(L_Particle);
 
@@ -859,11 +854,7 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 				lvz = L_vz + (2.0*G4UniformRand()-1.0)*L_dvz;
 			}
 
-			particleGun->SetNumberOfParticles(PBUNCH);
-
-			if(b == NBUNCHES-1)
-				particleGun->SetNumberOfParticles(PBUNCH + NREMAINING);
-
+			particleGun->SetNumberOfParticles(BUNCHES[b]);
 
 			// cout << " bunch " << b << " " << PBUNCH << endl;
 
@@ -875,13 +866,13 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	// Luminosity Particles2
 	int NBUNCHES2   = (int) floor(TWINDOW/TBUNCH2);
-	int PBUNCH2     = (int) floor((double)NP2/NBUNCHES2);
+	vector<int> BUNCHES2 = setBunches(NP2,NBUNCHES2);
 
 
-	if(PBUNCH2 > 0)
+	if(NP2 > 0)
 	{
 		particleGun->SetParticleDefinition(L2_Particle);
-		particleGun->SetNumberOfParticles(PBUNCH);
+		//		particleGun->SetNumberOfParticles(PBUNCH);
 
 		// getting kinematics
 		double L2_mass  = L2_Particle->GetPDGMass();
@@ -892,7 +883,8 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 		// all particles in a bunch are identical
 		for(int b=0; b<NBUNCHES2; b++) {
-			particleGun->SetParticleTime(TBUNCH2*b);
+		  particleGun->SetNumberOfParticles(BUNCHES2[b]);
+                        particleGun->SetParticleTime(TBUNCH2*b);
 			// spread momentum if requested
 			if(L2_dmom > 0) {
 				L2_Mom   += (2.0*G4UniformRand()-1.0)*L2_dmom;
@@ -1243,7 +1235,9 @@ void MPrimaryGeneratorAction::setBeam()
 	NP       = (int) get_number(values[0]);
 	TWINDOW  = get_number(values[1]);
 	TBUNCH   = get_number(values[2]);
-
+	TSIGNAL  = TWINDOW/2;
+	if(values.size()==4) TSIGNAL = get_number(values[3]);
+	TSIGNAL  = TBUNCH*floor(TSIGNAL/TBUNCH); // rounding to previous bunch
 
 
 	// %%%%%%%%%%%%%%%%%
@@ -1306,6 +1300,19 @@ void MPrimaryGeneratorAction::setBeam()
 
 }
 
+
+vector<int> MPrimaryGeneratorAction::setBunches(int nparticle, int nbunch)
+{
+        vector<int> bunches;
+	if(nparticle>0) {
+	   for(int i=0; i<nbunch; i++) bunches.push_back(0);
+           for(int i=0; i<nparticle; i++) {
+               int ib = (int) floor(G4UniformRand()*nbunch);
+               bunches[ib]++;
+           }
+	}   
+        return bunches;
+}
 
 MPrimaryGeneratorAction::~MPrimaryGeneratorAction()
 {
@@ -1377,7 +1384,7 @@ void MPrimaryGeneratorAction::setParticleFromPars(int p, int pindex, int type, i
 
 		// Primary particle generated int the middle of Time window
 		if(eventIndex > ntoskip) {
-			particleGun->SetParticleTime(TWINDOW/2);
+			particleGun->SetParticleTime(TSIGNAL);
 			particleGun->SetNumberOfParticles(1);
 			particleGun->GeneratePrimaryVertex(anEvent);
 		}
@@ -1509,7 +1516,7 @@ void MPrimaryGeneratorAction::setParticleFromParsPropagateTime(int p, vector<use
 
 			}
 
-			particleGun->SetParticleTime(TWINDOW/2 + timeoffset);
+			particleGun->SetParticleTime(TSIGNAL + timeoffset);
 			particleGun->SetNumberOfParticles(1);
 			particleGun->GeneratePrimaryVertex(anEvent);
 

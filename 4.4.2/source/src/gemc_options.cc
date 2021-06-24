@@ -229,9 +229,9 @@ void goptions::setGoptions()
 	// Luminosity Beam
 	// ---------------
 
-	optMap["LUMI_EVENT"].args = "0, 0*ns, 2*ns";
-	optMap["LUMI_EVENT"].help = "Luminosity Particle Parameters: number of Particles/Event, Time Window, Time Between Bunches\n";
-	optMap["LUMI_EVENT"].help += "            Example: -LUMI_EVENT=\"10000, 120*ns, 2*ns\" simulate 10K particles per event distributed over 120 ns, at 2ns intervals. \n";
+	optMap["LUMI_EVENT"].args = "0, 0*ns, 2*ns, 0*ns";
+	optMap["LUMI_EVENT"].help = "Luminosity Particle Parameters: number of Particles/Event, Time Window, Time Between Bunches, Primary Beam Particle Time (optional)\n";
+	optMap["LUMI_EVENT"].help += "            Example: -LUMI_EVENT=\"10000, 120*ns, 2*ns, 45*ns\" simulate 10K particles per event distributed over 120 ns, at 2ns intervals, with beam particle time set to last bunch before 45 ns. \n";
 	optMap["LUMI_EVENT"].name = "Luminosity Particle Parameters";
 	optMap["LUMI_EVENT"].type = 1;
 	optMap["LUMI_EVENT"].ctgr = "luminosity";
