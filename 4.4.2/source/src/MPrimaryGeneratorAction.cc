@@ -188,7 +188,6 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			return;
 		}
 	}
-
 	// internal generator. Particle defined by command line
 	if(input_gen == "gemc_internal") {
 
@@ -323,7 +322,7 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			double polZ = partPol * cos( polTheta/rad );
 			particleGun->SetParticlePolarization(G4ThreeVector( polX, polY, polZ ));
 
-			// Primary particle generated int the middle of Time window
+			// Primary particle generated at the chosen start time
 			particleGun->SetParticleTime(TSIGNAL);
 			particleGun->SetNumberOfParticles(1);
 			particleGun->GeneratePrimaryVertex(anEvent);
@@ -733,7 +732,7 @@ void MPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 						particleGun->SetParticlePolarization(G4ThreeVector( 0, 0, beamPol ));
 					}
 
-					// Primary particle generated int the middle of Time window
+					// Primary particle generated at the chosen start time
 					particleGun->SetParticleTime(TSIGNAL);
 					particleGun->GeneratePrimaryVertex(anEvent);
 					if(GEN_VERBOSITY > 3)
@@ -1239,7 +1238,6 @@ void MPrimaryGeneratorAction::setBeam()
 	if(values.size()==4) TSIGNAL = get_number(values[3]);
 	TSIGNAL  = TBUNCH*floor(TSIGNAL/TBUNCH); // rounding to previous bunch
 
-
 	// %%%%%%%%%%%%%%%%%
 	// Luminosity Beam 2
 	// %%%%%%%%%%%%%%%%%
@@ -1382,7 +1380,7 @@ void MPrimaryGeneratorAction::setParticleFromPars(int p, int pindex, int type, i
 			cout << hd_msg << " Particle Number:  " << p+1 << ", id=" << pdef << " (" << Particle->GetParticleName() << ")"
 			<< "  Vertex=" << beam_vrt/cm << "cm,  momentum=" << pmom/GeV << " GeV" << endl;
 
-		// Primary particle generated int the middle of Time window
+		// Primary particle generated at the chosen start time
 		if(eventIndex > ntoskip) {
 			particleGun->SetParticleTime(TSIGNAL);
 			particleGun->SetNumberOfParticles(1);
@@ -1451,7 +1449,7 @@ void MPrimaryGeneratorAction::setParticleFromParsPropagateTime(int p, vector<use
 			<< "  Vertex=" << beam_vrt/cm << "cm,  momentum=" << pmom/GeV << " GeV" << endl;
 		}
 		
-		// Primary particle generated in the middle of Time window, while non primary particles have a time offset
+		// Primary particle generated at the chosen start time, while non primary particles have a time offset
 		if(eventIndex > ntoskip) {
 			double timeoffset = 0;
 			//determine if the particle has an inactive parent

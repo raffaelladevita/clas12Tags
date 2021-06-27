@@ -68,7 +68,7 @@ public:
 	// these two should belong to a general generator class
 	// start time can be modeled
 	double getTimeWindow(){return TWINDOW;}
-	double getStartTime(){return TWINDOW/2;}
+	double getStartTime(){return TSIGNAL;}
 
 
 	bool isFileOpen() {return !gif.eof();}

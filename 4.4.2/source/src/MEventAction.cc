@@ -519,7 +519,7 @@ void MEventAction::EndOfEventAction(const G4Event* evt)
 				G4ThreeVector referenceRFPosition(get_number(rfstartoption[1]), get_number(rfstartoption[2]), get_number(rfstartoption[3]));
 				G4ThreeVector firstParticleVertex = evt->GetPrimaryVertex(0)->GetPosition();
 				additionalTime = (firstParticleVertex - referenceRFPosition).mag()/mm / 299.792; // speed of light in mm / ns
-				if(firstParticleVertex.z() > referenceRFPosition.z()) additionalTime = -additionalTime;
+      				if(firstParticleVertex.z() > referenceRFPosition.z()) additionalTime = -additionalTime;
 			}
 		}
 		
