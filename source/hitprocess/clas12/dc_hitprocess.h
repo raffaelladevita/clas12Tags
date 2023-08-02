@@ -46,6 +46,9 @@ public:
 	// sector, SL, slot, cable
 	double T0Correction[6][6][7][6];
 	
+	// TDC ranges(sector, layer, wire)
+	double tdcrange[36][112];
+
 	
 	double get_T0(int sectorI, int superlayerI, int layerI, int nwire) {
 		

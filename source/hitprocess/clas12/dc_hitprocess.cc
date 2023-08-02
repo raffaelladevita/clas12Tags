@@ -116,6 +116,20 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 	
 	
 	
+	// TDC ranges
+	sprintf(dcc.database, "/daq/config/dc:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
+	data.clear();
+	calib->GetCalib(data,  dcc.database);
+
+	for(unsigned row = 0; row < data.size(); row++) {
+		int sl     = data[row][1] - 1;
+		int wire   = data[row][2] - 1;
+		dcc.tdcrange[sl][wire] = data[row][3];
+	}
+	//********************************************
+
+
+
 	// reading DC core parameters
 	snprintf(dcc.database, sizeof(dcc.database),  "/geometry/dc/superlayer:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
 	unique_ptr<Assignment> dcCoreModel(calib->GetAssignment(dcc.database));
@@ -314,6 +328,8 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 			//Get beta-value of the particle:
 			beta_particle = mom[s].mag()/E[s];
 			
+			hit_signal_t = stepTime[s]/ns;
+
 		}
 	}
 	//******************************************************************
@@ -340,8 +356,11 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	
 	// cout << " DC TIME stime: " << smeared_time << " X: " << X << "  doca: " << doca/cm << "  dmax: " << dcc.dmaxsuperlayer[SLI] << "    tmax: " << dcc.tmaxsuperlayer[SECI][SLI] << "   alpha: " << alpha << "   thisMgnf: " << thisMgnf << " SECI: " << SECI << " SLI: " << SLI << endl;
 	
+	// check if time is within readout range
+	bool inrange = (smeared_time>0 && smeared_time<dcc.tdcrange[SLI*6+LAY][nwire-1]);
+	
 	int ineff = 1;
-	if(random < ddEff || X > 1) ineff = -1;
+	if(random < ddEff || X > 1 || !inrange) ineff = -1;
 	
 	// recording smeared and un-smeared quantities
 	dgtz["hitn"]       = hitn;

@@ -69,7 +69,7 @@ static uRwellConstants initializeuRwellConstants(int runno, string digiVariation
 	urwellC.gain =1E4;
 	
 	// drift velocity
-	urwellC.v_drift = 5E-3; // velocity drift [cm/ns]
+	urwellC.v_drift = 5E3; // velocity drift [cm/ns]
 	urwellC.sigma_time = 20; // time resolution 20 ns
 	
 	return urwellC;
@@ -88,6 +88,8 @@ map<string, double>uRwell_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	//uRwellConstants uRwellC;
 	trueInfos tInfos(aHit);
 	
+	if(identity[3].id ==-15000 || fabs(identity[3].time-750)>200)
+	  rejectHitConditions = true;
 	
 	dgtz["hitn"]   = hitn;
 	dgtz["sector"] = identity[0].id;
