@@ -98,7 +98,22 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 		//        cout << dcc.v0[sec][sl] << " " << dcc.deltanm[sec][sl] << " " << dcc.tmaxsuperlayer[sec][sl] << " " << dcc.R[sec][sl] << " " << dcc.vmid[sec][sl] << endl;
 	}
 	
-	
+	// wire readout side (should come from CCDB but it is currently hardcoded in reconstruction too)
+	for(int s =0; s<6; s++) {
+            dcc.stbloc[s][0]=1;
+            dcc.stbloc[s][1]=-1;
+            dcc.stbloc[s][4]=1;
+            dcc.stbloc[s][5]=1;
+        }
+        for(int sl =2; sl<4; sl++) {
+            dcc.stbloc[2][sl]=1;
+            dcc.stbloc[3][sl]=1;
+            dcc.stbloc[4][sl]=1;
+            dcc.stbloc[0][sl]=-1;
+            dcc.stbloc[1][sl]=-1;
+            dcc.stbloc[5][sl]=-1;
+        }
+	dcc.vprop = 29.97924580*0.7; // hardcoded in reconstruction too
 	
 	// T0 corrections: a delay to be introduced (plus sign) to the TDC timing
 	snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/time_corrections/T0Corrections:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
@@ -190,11 +205,17 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	int nwire = identity[3].id;
 	
 	// nwire position information
-	double ylength =  aHit->GetDetector().dimensions[3];    ///< G4Trap Semilength
-	double deltay  = 2.0*ylength/dcc.NWIRES;                ///< Y length of cell
-	double WIRE_Y  = nwire*deltay;                          ///< Center of wire hit
-	if(SLI > 3) WIRE_Y += dcc.miniStagger[LAY];             ///< Region 3 (SLI 4 and 5) have mini-stagger for the sense wires
-	
+	double ylength =  aHit->GetDetector().dimensions[3];      ///< G4Trap Semiheight
+	double xlength_low  =  aHit->GetDetector().dimensions[4]; ///< G4Trap half-base at -ylength
+	double xlength_high =  aHit->GetDetector().dimensions[5]; ///< G4Trap half-base at +ylength
+	double yskew   = aHit->GetDetector().dimensions[6];       ///< G4Trap angle with respect to the vertical of the vector connecting the bases mid-points
+	double deltay  = 2.0*ylength/dcc.NWIRES;                  ///< Y length of cell
+	double WIRE_Y  = nwire*deltay;                            ///< Center of hit wire in y
+	double WIRE_X  = (WIRE_Y-ylength)*tan(yskew);             ///< Center of hit wire in x
+	double WIRE_DX = xlength_low +                            ///< Half-length of the wire
+	                (xlength_high-xlength_low)*WIRE_Y/(2*ylength); 
+	if(SLI > 3) WIRE_Y += dcc.miniStagger[LAY];               ///< Region 3 (SLI 4 and 5) have mini-stagger for the sense wires
+
 	vector<int>           stepTrackId = aHit->GetTIds();
 	vector<double>        stepTime    = aHit->GetTime();
 	vector<double>        mgnf        = aHit->GetMgnf();
@@ -205,7 +226,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	vector<double>        E           = aHit->GetEs();
 	
 	unsigned nsteps = Edep.size();
-	
+//	cout << nsteps << " " << (SECI+1) << "/" << (SLI+1) << "/" << (LAY+1) << "/" << nwire << " dim: " << ylength <<"/"<< xlength_low << "/" << xlength_high <<endl;
 	// Identifying the fastest - given by time + doca(s) / drift velocity
 	// trackId Strong and Weak in case the track does or does not deposit enough energy
 	int trackIds = -1;
@@ -217,8 +238,10 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	for(unsigned int s=0; s<nsteps; s++)
 	{
 		G4ThreeVector DOCA(0, Lpos[s].y() + ylength - WIRE_Y, Lpos[s].z()); // local cylinder
-		signal_t = stepTime[s]/ns + DOCA.mag()/(dcc.v0[SECI][SLI]*cm/ns);
-		// cout << "signal_t: " << signal_t << " stepTime: " << stepTime[s] << " DOCA: " << DOCA.mag() << " driftVelocity: " << dcc.driftVelocity[SLI] << " Lposy: " << Lpos[s].y() << " ylength: " << ylength << " WIRE_Y: " << WIRE_Y << " Lposz: " << Lpos[s].z() << " dcc.NWIRES: " << dcc.NWIRES << endl;
+		double tprop = (WIRE_DX + dcc.stbloc[SECI][SLI]*(Lpos[s].x()-WIRE_X))/(dcc.vprop*cm/ns); //x axis points toward the left end of the wire 
+		signal_t = stepTime[s]/ns + DOCA.mag()/(dcc.v0[SECI][SLI]*cm/ns) + tprop;
+		//	        cout << " signal_t: " << signal_t << " stepTime: " << stepTime[s] << " DOCA: " << DOCA.mag() << " driftVelocity: " << dcc.v0[SECI][SLI]
+//		  cout << " tprop: " << tprop << " ylength: " << ylength << " WIRE_Y: " << WIRE_Y << " WIRE_DX: " << WIRE_DX << "/" << xlength_low+(xlength_high-xlength_low)*(Lpos[s].y()+ylength)/2/ylength << " x: " << (Lpos[s].x()-WIRE_X) << " y: " << (Lpos[s].y()+ylength) << " Lposx: " << (Lpos[s].x()) << " Lposy: " << (Lpos[s].y()) << " Lposz: " << Lpos[s].z() << " phi: " << atan2(pos[s].y(),pos[s].x())*180/3.14156 << " dcc.NWIRES: " << dcc.NWIRES << endl;
 		
 		if(signal_t < minTime)
 		{
