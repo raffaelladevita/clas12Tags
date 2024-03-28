@@ -43,7 +43,7 @@ sensitiveDetector::sensitiveDetector(G4String name, goptions opt, string factory
 		skipSensitivity = true;
 	}
 	
-	SDID = sensitiveID(HCname, gemcOpt, factory, variation, system);
+	SDID = sensitiveID(HCname, gemcOpt, factory, variation, system, run);
 	
 }
 
@@ -164,7 +164,6 @@ G4bool sensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 	if(fmanager) {
 		fmanager->GetDetectorField()->GetFieldValue(point, fieldValue);
 		hitFieldValue = sqrt(fieldValue[0]*fieldValue[0] + fieldValue[1]*fieldValue[1] + fieldValue[2]*fieldValue[2]);
-		
 	}
 	
 	///< Process VID: getting Identifier at the ProcessHitRoutine level
@@ -194,6 +193,7 @@ G4bool sensitiveDetector::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 			this_shit.TimeWindow = thisPID.TimeWindow;
 			this_shit.TrackId    = thisPID.TrackId;
 			this_shit.id_sharing = thisPID.id_sharing;
+			this_shit.userInfos = thisPID.userInfos;
 			mhPID.push_back(this_shit);
 		}
 		
@@ -425,5 +425,3 @@ int sensitiveDetector::processID(string procName)
 	
 	return 999;
 }
-
-
