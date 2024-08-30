@@ -377,8 +377,6 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	// decide if write an hit or not based on inefficiency value
 	rejectHitConditions=(ineff==-1);
 
-
-
 	// define conditions to reject hit
 	if(rejectHitConditions) {
 		writeHit = false;
@@ -637,5 +635,3 @@ void dc_HitProcess::initWithRunNumber(int runno)
 
 // this static function will be loaded first thing by the executable
 dcConstants dc_HitProcess::dcc = initializeDCConstants(-1);
-
-

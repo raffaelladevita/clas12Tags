@@ -3,7 +3,15 @@ from init_env import init_environment
 # adding ccdb as temporary dependency
 # will be removed once the hit process routines are plugins
 env = init_environment("qt5 geant4 clhep xercesc ccdb mlibrary cadmesh hipo c12bfields")
-env.Append(CXXFLAGS=['-std=c++14'])
+env.Append(CXXFLAGS=['-std=c++17'])
+
+# addressing shortcoming of geant4-config 10.7.4 not returning all libraries
+additional_libs = []
+additional_libs.append('pthread')
+additional_libs.append('G4ptl')
+additional_libs.append('G4tasking')
+additional_libs.append('ccdb_sqlite')
+env.Append(LIBS  = additional_libs)
 
 # added because clhep is still behind clang (5/2015)
 if env['PLATFORM'] == 'darwin':
@@ -15,6 +23,7 @@ materials_sources = Split("""
 	materials/material_factory.cc
 	materials/cpp_materials.cc
 	materials/mysql_materials.cc
+	materials/sqlite_materials.cc
 	materials/text_materials.cc""")
 env.Library(source = materials_sources, target = "lib/gmaterials")
 
@@ -53,6 +62,7 @@ det_sources = Split("""
 	detector/detector.cc
 	detector/detector_factory.cc
 	detector/mysql_det_factory.cc
+	detector/sqlite_det_factory.cc
 	detector/gdml_det_factory.cc
 	detector/cad_det_factory.cc
 	detector/clara_det_factory.cc

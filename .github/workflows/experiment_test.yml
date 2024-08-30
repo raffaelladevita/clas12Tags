@@ -16,7 +16,7 @@ on:
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
-    container: jeffersonlab/base:fedora36
+    container: jeffersonlab/gemc:dev-fedora36
     outputs:
       matrix:  ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -32,22 +32,19 @@ jobs:
   test:
     needs: generate-matrix
     runs-on: ubuntu-latest
-    container: jeffersonlab/gemc:4.4.2-5.1-5.2-5.3-fedora36-cvmfs
+    container: jeffersonlab/gemc:dev-g4v10.7.4-fedora36-cvmfs
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
 
     steps:
-#      - uses: cvmfs-contrib/github-action-cvmfs@v3.1
       - name: Checkout
         uses: actions/checkout@main
-      - name: ${{ matrix.detector }} tests
-        run: |
-          ./ci/experiments_test.sh -t ${{ matrix.gcard }}
       - name: Collect Workflow Telemetry
         uses: runforesight/workflow-telemetry-action@v1.8.7
-      - uses: gitboard-io/gitboard-action@main
-        with:
-          username: maureeungaro
-          key: 3d8e9059-a164-4bea-9541-1cb8789d805b
+      - name: ${{ matrix.detector }} tests
+        run: |
+          ./ci/experiments_test.sh -g ${{ matrix.gcard }}
+
+
 

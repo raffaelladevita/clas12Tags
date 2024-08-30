@@ -15,7 +15,6 @@ using namespace std;
 
 class material
 {
-	
 	public:
 		material(){;}
 		material(string n){name = n;}
@@ -34,6 +33,12 @@ class material
 		vector<double> absorptionLength;
 		vector<double> reflectivity;
 		vector<double> efficiency;
+		
+		// mie scattering
+		vector<double> mie;
+		double mieforward;
+		double miebackward;
+		double mieratio;
 
 		// scintillation
 		vector<double> fastcomponent;
@@ -78,4 +83,3 @@ map<string, G4Material*> materialsWithIsotopes();
 void printMaterials(map<string, G4Material*> matMap);
 
 #endif
-

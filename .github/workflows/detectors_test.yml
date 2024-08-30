@@ -16,26 +16,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: jeffersonlab/cvmfs:fedora36
+    container: jeffersonlab/gemc:dev-fedora36
     strategy:
       fail-fast: false
       matrix:
-        tag:
-          - 5.4
         detector:
           - targets
-#          - dc
+          - dc
     steps:
-#      - uses: cvmfs-contrib/github-action-cvmfs@v3.1
       - name: Checkout
         uses: actions/checkout@main
       - name: Workflow Telemetry
         uses: runforesight/workflow-telemetry-action@v1.8.7
-      - name: ${{ matrix.tag }} ${{ matrix.detector }} test
+      - name: ${{ matrix.detector }} test
         run: |
-          ./ci/detectors_test.sh -t ${{ matrix.tag }} -d ${{ matrix.detector }}
-      - uses: gitboard-io/gitboard-action@main
-        with:
-          username: maureeungaro
-          key: 3d8e9059-a164-4bea-9541-1cb8789d805b
+          ./ci/detectors_test.sh -d ${{ matrix.detector }}
+
 
