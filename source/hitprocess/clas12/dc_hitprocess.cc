@@ -365,7 +365,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	// cout << " DC TIME stime: " << smeared_time << " X: " << X << "  doca: " << doca/cm << "  dmax: " << dcc.dmaxsuperlayer[SLI] << "    tmax: " << dcc.tmaxsuperlayer[SECI][SLI] << "   alpha: " << alpha << "   thisMgnf: " << thisMgnf << " SECI: " << SECI << " SLI: " << SLI << endl;
 	
 	// check if time is within readout range
-	bool inrange = (smeared_time>0 && smeared_time<dcc.tdcrange[SLI*6+LAY][nwire-1]);
+	bool inrange = (smeared_time>0 && smeared_time<dcc.tdcrange[SLI*6+LAYI][nwire-1]);
 	
 	int ineff = 1;
 	if(random < ddEff || X > 1 || !inrange) ineff = -1;
@@ -405,7 +405,7 @@ vector<identifier>  dc_HitProcess :: processID(vector<identifier> id, G4Step* aS
         double zlength = Detector.dimensions[0];      // superlayer volume half thickess (full thickness include first and last field guard plane)  
         double deltaz  = 2*zlength/3/(dcc.NLAYERS+1); // distance between wire planes including field, sense, and guard
         double loc_z   = Lxyz.z() + zlength;          // depth of the hit  
-	int ilayer = floor(loc_z/deltaz);             // first find the layer plane (including guard, sense and field), rane = 0-20
+	int ilayer = floor(loc_z/deltaz);             // first find the layer plane (including guard, sense and field), range = 0-20
         double dlayer = 3*deltaz;
 
 	double ylength = Detector.dimensions[3];     ///< G4Trap Semiheight (full height includes first and last guard wires of even layers)
