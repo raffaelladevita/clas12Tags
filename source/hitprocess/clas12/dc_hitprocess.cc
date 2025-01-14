@@ -114,7 +114,7 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
             dcc.stbloc[1][sl]=-1;
             dcc.stbloc[5][sl]=-1;
         }
-	dcc.vprop = 29.97924580*0.7; // hardcoded in reconstruction too
+	dcc.vprop = 29.97924580*0.7*cm/ns; // hardcoded in reconstruction too
 	
 	// T0 corrections: a delay to be introduced (plus sign) to the TDC timing
 	snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/time_corrections/T0Corrections:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
@@ -220,9 +220,9 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
         G4ThreeVector wirePos = wireLxyz(LAYI+1, nwire, deltaz, deltay); ///< Center of hit wire in the local frame where y=z=0 is the first guard wires
 //	double WIRE_Y  = nwire*deltay;                            ///< Center of hit wire in y
 //	double WIRE_X  = (WIRE_Y-ylength)*tan(yskew);             ///< Center of hit wire in x
+	if(SLI > 3) wirePos.setY(wirePos.y()+dcc.miniStagger[LAYI]);             ///< Region 3 (SLI 4 and 5) have mini-stagger for the sense wires
 	double WIRE_DX = xlength_low +                            ///< Half-length of the wire
 	                (xlength_high-xlength_low)*wirePos.y()/(2*ylength); 
-	if(SLI > 3) wirePos.setY(wirePos.y()+dcc.miniStagger[LAYI]);             ///< Region 3 (SLI 4 and 5) have mini-stagger for the sense wires
 
 	vector<int>           stepTrackId = aHit->GetTIds();
 	vector<double>        stepTime    = aHit->GetTime();
@@ -242,11 +242,14 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	double minTime  = 10000;
 	double signal_t = 0;
 	double hit_signal_t = 0;
+	double prop_t = 0;
+	double prop_d = 0;
 	
 	for(unsigned int s=0; s<nsteps; s++)
 	{
 		G4ThreeVector DOCA(0, Lpos[s].y() + ylength - wirePos.y(), Lpos[s].z() + zlength - wirePos.z()); // local cylinder
-		double tprop = (WIRE_DX + dcc.stbloc[SECI][SLI]*(Lpos[s].x()-wirePos.x()))/(dcc.vprop*cm/ns); //x axis points toward the left end of the wire 
+		double dprop = (WIRE_DX + dcc.stbloc[SECI][SLI]*(Lpos[s].x()-wirePos.x())); //x axis points toward the left end of the wire 
+		double tprop = (WIRE_DX + dcc.stbloc[SECI][SLI]*(Lpos[s].x()-wirePos.x()))/dcc.vprop; //x axis points toward the left end of the wire 
 		signal_t = stepTime[s]/ns + DOCA.mag()/(dcc.v0[SECI][SLI]*cm/ns) + tprop;
 		//	        cout << " signal_t: " << signal_t << " stepTime: " << stepTime[s] << " DOCA: " << DOCA.mag() << " driftVelocity: " << dcc.v0[SECI][SLI]
 //		  cout << " tprop: " << tprop << " ylength: " << ylength << " WIRE_Y: " << WIRE_Y << " WIRE_DX: " << WIRE_DX << "/" << xlength_low+(xlength_high-xlength_low)*(Lpos[s].y()+ylength)/2/ylength << " x: " << (Lpos[s].x()-WIRE_X) << " y: " << (Lpos[s].y()+ylength) << " Lposx: " << (Lpos[s].x()) << " Lposy: " << (Lpos[s].y()) << " Lposz: " << Lpos[s].z() << " phi: " << atan2(pos[s].y(),pos[s].x())*180/3.14156 << " dcc.NWIRES: " << dcc.NWIRES << endl;
@@ -256,12 +259,14 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 			trackIdw = stepTrackId[s];
 			minTime = signal_t;
 			
+			// new hit time
+			// (w/o the drift time)
+			hit_signal_t = stepTime[s]/ns;
+			prop_t = tprop/ns;
+                        prop_d = dprop/cm;
+
 			if(Edep[s] >= dcc.dcThreshold*eV) {
-				// new hit time
-				// (w/o the drift time)
-				// not activated yet
-				// hit_signal_t = stepTime[s]/ns;
-				
+
 				trackIds = stepTrackId[s];
 			}
 		}
@@ -367,7 +372,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	
 	// Now calculate the smeared time:
 	// adding the time of hit from the start of the event (signal_t), which also has the drift velocity into it
-	double smeared_time = unsmeared_time + dt_random + hit_signal_t + dcc.get_T0(SECI, SLI, LAYI, nwire);
+	double smeared_time = unsmeared_time + dt_random + hit_signal_t + prop_t + dcc.get_T0(SECI, SLI, LAYI, nwire);
 	
 	// cout << " DC TIME stime: " << smeared_time << " X: " << X << "  doca: " << doca/cm << "  dmax: " << dcc.dmaxsuperlayer[SLI] << "    tmax: " << dcc.tmaxsuperlayer[SECI][SLI] << "   alpha: " << alpha << "   thisMgnf: " << thisMgnf << " SECI: " << SECI << " SLI: " << SLI << endl;
 	
@@ -381,6 +386,10 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	dgtz["component"]  = nwire;
 	dgtz["TDC_order"]  = 0;
 	dgtz["TDC_TDC"]    = smeared_time;
+//	dgtz["TDC_thit"]   = hit_signal_t;
+//	dgtz["TDC_tprop"]  = prop_t;
+//	dgtz["TDC_dprop"]  = prop_d;
+//	dgtz["TDC_wlength"]  = 2*WIRE_DX;
 	
 	// decide if write an hit or not based on inefficiency value
 	rejectHitConditions=(ineff==-1);
