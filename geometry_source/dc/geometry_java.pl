@@ -33,8 +33,43 @@ sub make_region
 		$detector{"dimensions"}  = $dimensions->{$vname};
 
 		$detector{"color"}       = "aa0000";
+                if ( $region == 2 ) {
+                    $detector{"material"}    = "dcg10";
+		}
+                else {
+                    $detector{"material"}    = "G4_Al";
+		}
+                $detector{"visible"}     = 1;
+		$detector{"style"}       = 0;
+		print_det(\%main::configuration, \%detector);
+	}
+
+}
+
+sub make_regionGas
+{
+	my $iregion = shift;
+	my $region = $iregion + 1;
+	my $nSectors = 6;
+
+	for(my $s=1; $s<=$nSectors; $s++)
+	{
+		my %detector = init_det();
+		my $vname = "regionGas$region"."_s$s";
+
+		$detector{"name"}        = $vname;
+		$detector{"mother"}      = $mothers->{$vname};
+		$detector{"description"} = "CLAS12 Drift Chambers Gas, Sector $s Region $region";
+
+		$detector{"pos"}            = $positions->{$vname};
+		$detector{"rotation"}   = $rotations->{$vname};
+		$detector{"type"}           = $types->{$vname};
+		$detector{"dimensions"}  = $dimensions->{$vname};
+
+		$detector{"color"}       = "99ffff";
 		$detector{"material"}    = "dcgas";
-		$detector{"visible"}     = 0;
+		$detector{"visible"}     = 1;
+		$detector{"style"}       = 0;
 		print_det(\%main::configuration, \%detector);
 	}
 
@@ -89,6 +124,10 @@ sub makeDC
 	make_region(1);
 	make_region(2);
 		
+	make_regionGas(0);
+	make_regionGas(1);
+	make_regionGas(2);
+
 	make_superlayers(0);
 	make_superlayers(1);
 	make_superlayers(2);
