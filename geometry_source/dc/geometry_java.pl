@@ -34,7 +34,8 @@ sub make_region
 
 		$detector{"color"}       = "aa0000";
 		$detector{"material"}    = "G4_Al";
-		$detector{"visible"}     = 0;
+		$detector{"visible"}     = 1;
+		$detector{"style"}     = 0;
 		print_det(\%main::configuration, \%detector);
 	}
 
@@ -60,9 +61,10 @@ sub make_regionGas
 		$detector{"type"}           = $types->{$vname};
 		$detector{"dimensions"}  = $dimensions->{$vname};
 
-		$detector{"color"}       = "aa0000";
+		$detector{"color"}       = "99ffff";
 		$detector{"material"}    = "dcgas";
-		$detector{"visible"}     = 0;
+		$detector{"visible"}     = 1;
+		$detector{"style"}     = 0;
 		print_det(\%main::configuration, \%detector);
 	}
 
