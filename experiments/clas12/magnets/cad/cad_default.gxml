@@ -44,12 +44,6 @@
 	<volume name="dcs4r1support"             color="ffaaff" material="G4_Al"              position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
 	<volume name="dcs5r1support"             color="ffaaff" material="G4_Al"              position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
 	<volume name="dcs6r1support"             color="ffaaff" material="G4_Al"              position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs1r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs2r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs3r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs4r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs5r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
-	<volume name="dcs6r1back"                color="ffaaff" material="G4_KAPTON"          position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg"/>
     <volume name="DSShieldFrontLead"         color="22ffff" position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg" material="G4_Pb"/>
     <volume name="DSShieldBackLead"          color="22ffff" position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg" material="G4_Pb"/>
     <volume name="DSShieldInnerAss"          color="992222" position="0*mm 0*mm 1273.27*mm" rotation="0*deg 180*deg 0*deg" material="G4_STAINLESS-STEEL"/>
