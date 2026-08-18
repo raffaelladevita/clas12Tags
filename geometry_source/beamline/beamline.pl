@@ -37,6 +37,7 @@ our $inches = 25.4;
 require "./materials.pl";
 require "./vacuumLine.pl";
 require "./ELMOline.pl";
+require "./highLumi.pl";
 require "./rghline.pl";
 require "./transverseUpstreamBeampipe.pl";
 
@@ -45,6 +46,9 @@ sub create_system {
 
     if ($variation eq "rgc_fall2022") {
         ELMOline();
+    }
+    elsif ($variation eq "highLumi") {
+        highLumi();
     }
     elsif ($variation eq "TransverseUpstreamBeampipe") {
         transverseUpstreamBeampipe();
@@ -75,7 +79,7 @@ my @variations = ("default",
 
 my @runs = clas12_runs(@variations);
 
-my @custom_variations = ("ddvcs", "rghFTOut", "rghFTOn", "TransverseUpstreamBeampipe");
+my @custom_variations = ("ddvcs", "highLumi", "rghFTOut", "rghFTOn", "TransverseUpstreamBeampipe");
 
 # TEXT Factory, include extra variations
 $configuration{"factory"} = "TEXT";
