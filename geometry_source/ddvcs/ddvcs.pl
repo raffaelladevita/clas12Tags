@@ -97,7 +97,7 @@ require "./ddvcs_ecal.pl";
 require "./ddvcs_bigcone.pl";
 
 # all the scripts must be run for every configuration
-my @allConfs = ("30_cm_TST", "scorer", "mucalActive", "newScattChamber");
+my @allConfs = ("30_cm_TST", "scorer", "mucalActive", "newScattChamber", "mollerCone");
 
 foreach my $conf ( @allConfs )
 {
@@ -114,6 +114,8 @@ foreach my $conf ( @allConfs )
 		define_mucal_hit();
 	} elsif($configuration{"variation"} eq "scorer") {
 		makeScorer();
+	} elsif($configuration{"variation"} eq "mollerCone") {
+		buildMollerCone();
 	} else{
 		make_scatt_chambers();
                 makeBigCone();
