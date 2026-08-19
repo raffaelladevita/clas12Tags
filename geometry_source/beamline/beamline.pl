@@ -50,6 +50,9 @@ sub create_system {
     elsif ($variation eq "highLumi") {
         highLumi();
     }
+    elsif ($variation eq "highLumi7") {
+        highLumi7();
+    }
     elsif ($variation eq "TransverseUpstreamBeampipe") {
         transverseUpstreamBeampipe();
     }
@@ -79,7 +82,7 @@ my @variations = ("default",
 
 my @runs = clas12_runs(@variations);
 
-my @custom_variations = ("ddvcs", "highLumi", "rghFTOut", "rghFTOn", "TransverseUpstreamBeampipe");
+my @custom_variations = ("ddvcs", "highLumi", "highLumi7", "rghFTOut", "rghFTOn", "TransverseUpstreamBeampipe");
 
 # TEXT Factory, include extra variations
 $configuration{"factory"} = "TEXT";
