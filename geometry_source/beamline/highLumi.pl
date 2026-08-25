@@ -312,10 +312,10 @@ sub highLumi7()
 
 
 
-	my $nplanes_pipe = 7;
-	my @zplane_pipe  =  (250.0, 360.0, 570.0, 2280.0, 2280.0, 2380.0, 2750.0);
-	my @iradius_pipe  = ( 18.0,  18.0,  22.0,   22.0,   28.0,   28.0,   28.0);
-	my @oradius_pipe  = ( 20.0,  20.0,  24.0,   24.0,   32.9,   32.9,   32.9);
+	my $nplanes_pipe = 5;
+	my @zplane_pipe  =  (570.0, 2280.0, 2280.0, 2380.0, 2750.0);
+	my @iradius_pipe  = ( 22.0,   22.0,   28.0,   28.0,   28.0);
+	my @oradius_pipe  = ( 24.0,   24.0,   32.9,   32.9,   32.9);
         %detector = init_det();
         $detector{"name"} = "vacuumPipe1";
         $detector{"mother"} = "root";
@@ -349,7 +349,7 @@ sub highLumi7()
         print_det(\%configuration, \%detector);
 
         my $thickness = 0.0375;
-        my $radius = $iradius_pipe[0]-0.01;
+        my $radius = $oradius_pipe[0];
         my $zpos = $zplane_pipe[0] - $thickness;
         %detector = init_det();
         $detector{"name"} = "al_window_vacuum_entrance";
