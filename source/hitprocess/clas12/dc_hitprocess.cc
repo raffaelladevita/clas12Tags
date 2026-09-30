@@ -46,18 +46,25 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 	
 	
 	// reading efficiency parameters
-	snprintf(dcc.database, sizeof(dcc.database), "/calibration/dc/signal_generation/inefficiency:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
+	snprintf(dcc.database, sizeof(dcc.database), "/calibration/dc/v2/inefficiency:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
 	vector<vector<double> > data;
 	calib->GetCalib(data, dcc.database);
 	for(unsigned row = 0; row < data.size(); row++)
 	{
-		int sec = data[row][0] - 1;
+		int sec = data[row][0];
 		int sl  = data[row][1] - 1;
-		dcc.iScale[sec][sl] = data[row][3];
-		dcc.P1[sec][sl]     = data[row][4];
-		dcc.P2[sec][sl]     = data[row][5];
-		dcc.P3[sec][sl]     = data[row][6];
-		dcc.P4[sec][sl]     = data[row][7];
+		dcc.p0[sec][sl] = data[row][3];
+		dcc.p1[sec][sl] = data[row][4];
+		dcc.p2[sec][sl] = data[row][5];
+		dcc.p3[sec][sl] = data[row][6];
+		dcc.p4[sec][sl] = data[row][7];
+		dcc.p5[sec][sl] = data[row][8];
+		dcc.p6[sec][sl] = data[row][9];
+		dcc.p7[sec][sl] = data[row][10];
+		dcc.p8[sec][sl] = data[row][11];
+		dcc.p9[sec][sl] = data[row][12];
+		dcc.p10[sec][sl] = data[row][13];
+		dcc.p11[sec][sl] = data[row][14];
 	}
 	
 	// reading smearing parameters
@@ -377,7 +384,13 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	double X = (doca/cm) / (2*dcc.dLayer[SLI]);
 	
 	// distance-dependent fractional inefficiency as a function of doca
-	double ddEff = dcc.iScale[SECI][SLI]*(dcc.P1[SECI][SLI]/pow(X*X + dcc.P2[SECI][SLI], 2) + dcc.P3[SECI][SLI]/pow( (1-X) + dcc.P4[SECI][SLI], 2));
+	double ddEff = (dcc.p0[0][SLI] + dcc.p1[0][SLI]*thisMgnf)
+                     / pow(X*X + (dcc.p2[0][SLI] + dcc.p3[0][SLI]*thisMgnf)*X + dcc.p4[0][SLI]
+                     , (dcc.p5[0][SLI] + dcc.p6[0][SLI]*thisMgnf + dcc.p7[0][SLI]*thisMgnf*thisMgnf))
+                     + (dcc.p8[0][SLI] + dcc.p9[0][SLI]*thisMgnf + dcc.p10[0][SLI]*thisMgnf*thisMgnf)
+                     / pow((1-X)*(1-X) + dcc.p11[0][SLI], 2);
+        
+
 	double random = G4UniformRand(); 
 	
 	// unsmeared time, based on the dist-time-function and alpha;

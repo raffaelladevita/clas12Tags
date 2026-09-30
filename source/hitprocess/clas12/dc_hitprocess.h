@@ -28,7 +28,7 @@ public:
 	double vprop;                                  // signal propagation speed along the wire  
 	
 	// efficiency parameters for each superlayer
-	double P1[6][6], P2[6][6], P3[6][6], P4[6][6], iScale[6][6];
+	double p0[6][6], p1[6][6], p2[6][6], p3[6][6], p4[6][6], p5[6][6], p6[6][6], p7[6][6], p8[6][6], p9[6][6], p10[6][6], p11[6][6];
 	
 	// smearing parameters for each sector / superlayer
 	double smearP0[6][6], smearP1[6][6], smearP2[6][6], smearP3[6][6], smearP4[6][6];
