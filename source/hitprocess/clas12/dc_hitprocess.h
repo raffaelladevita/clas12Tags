@@ -125,6 +125,9 @@ public:
 
 	// returns time walks according to ionisation process:
 	double doca_smearing(double x, double beta, int sector, int superlayer);
+
+	// returns intrinsic inefficiency:
+	double inefficiency(double x, double bfield, int superlayer);
 	
 	G4ThreeVector psmear(G4ThreeVector p);
 

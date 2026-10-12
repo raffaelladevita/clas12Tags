@@ -66,7 +66,8 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 		dcc.p10[sec][sl] = data[row][13];
 		dcc.p11[sec][sl] = data[row][14];
 	}
-	
+
+
 	// reading smearing parameters
 	snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/signal_generation/doca_smearing:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
 	data.clear();
@@ -201,7 +202,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	vector<identifier> identity = aHit->GetId();
 	rejectHitConditions = false;
 	writeHit = true;
-	
+
 	if(aHit->isBackgroundHit == 1) {
 		
 		vector<double>        stepTime    = aHit->GetTime();
@@ -384,12 +385,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	double X = (doca/cm) / (2*dcc.dLayer[SLI]);
 	
 	// distance-dependent fractional inefficiency as a function of doca
-	double ddEff = (dcc.p0[0][SLI] + dcc.p1[0][SLI]*thisMgnf)
-                     / pow(X*X + (dcc.p2[0][SLI] + dcc.p3[0][SLI]*thisMgnf)*X + dcc.p4[0][SLI]
-                     , (dcc.p5[0][SLI] + dcc.p6[0][SLI]*thisMgnf + dcc.p7[0][SLI]*thisMgnf*thisMgnf))
-                     + (dcc.p8[0][SLI] + dcc.p9[0][SLI]*thisMgnf + dcc.p10[0][SLI]*thisMgnf*thisMgnf)
-                     / pow((1-X)*(1-X) + dcc.p11[0][SLI], 2);
-        
+	double ddEff = inefficiency(X, thisMgnf, SLI+1);
 
 	double random = G4UniformRand(); 
 	
@@ -662,6 +658,25 @@ double dc_HitProcess :: doca_smearing(double x, double beta, int sector, int sup
 	return doca_smear;
 }
 
+// Define DC inefficiency based on data parameterization
+// x: distance from the wire normalized to the cell size
+// bfield = magnitude of field in tesla
+// superlayer: DC superlayer
+// returns inefficiency
+double dc_HitProcess :: inefficiency(double x, double bfield, int superlayer){
+
+        int SLI = superlayer -1;
+
+        if(x>1) x = 1;
+  
+	double ddEff = (dcc.p0[0][SLI] + dcc.p1[0][SLI]*bfield)
+                     / pow(x*x + (dcc.p2[0][SLI] + dcc.p3[0][SLI]*bfield)*x + dcc.p4[0][SLI]
+                     , (dcc.p5[0][SLI] + dcc.p6[0][SLI]*bfield + dcc.p7[0][SLI]*bfield*bfield))
+                     + (dcc.p8[0][SLI] + dcc.p9[0][SLI]*bfield + dcc.p10[0][SLI]*bfield*bfield)
+                     / pow((1-x)*(1-x) + dcc.p11[0][SLI], 2);
+
+	return ddEff/100;
+}        
 
 // - electronicNoise: returns a vector of hits generated / by electronics: NOT CURRENTLY USED
 vector<MHit*> dc_HitProcess :: electronicNoise()
