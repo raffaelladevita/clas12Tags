@@ -27,6 +27,9 @@ public:
 	int    stbloc[6][6];                           // wire readout side: -1=left, 1=right 
 	double vprop;                                  // signal propagation speed along the wire  
 	
+	// sstatus table
+	double status[6][36][112];
+
 	// efficiency parameters for each superlayer
 	double P1[6][6], P2[6][6], P3[6][6], P4[6][6], iScale[6][6];
 	

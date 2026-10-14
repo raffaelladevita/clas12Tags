@@ -45,9 +45,21 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 	unique_ptr<Calibration> calib(CalibrationGenerator::CreateCalibration(dcc.connection));
 	
 	
+	// reading status table
+	snprintf(dcc.database, sizeof(dcc.database), "/calibration/dc/tracking/wire_status:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
+	vector<vector<double> > data;
+	calib->GetCalib(data, dcc.database);
+	for(unsigned row = 0; row < data.size(); row++)
+	{
+		int sec = data[row][0] - 1;
+		int lay = data[row][1] - 1;
+		int wir = data[row][2] - 1;
+		dcc.status[sec][lay][wir] = data[row][3];
+	}
+	
 	// reading efficiency parameters
 	snprintf(dcc.database, sizeof(dcc.database), "/calibration/dc/signal_generation/inefficiency:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
-	vector<vector<double> > data;
+	data.clear();
 	calib->GetCalib(data, dcc.database);
 	for(unsigned row = 0; row < data.size(); row++)
 	{
@@ -76,7 +88,7 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 	}
 	
 	
-	//********************************************
+	//********************************************//
 	//reading reference and current-run pressure:
 	snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/v2/ref_pressure:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
 	data.clear();
@@ -87,7 +99,7 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 	calib->GetCalib(data, dcc.database);
 	double current_pressure = data[3][3];
         double dpressure = current_pressure - ref_pressure;
-	//********************************************
+	//********************************************//
 	//calculating distance to time:
 	snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/v2/t2d_pressure:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
 	data.clear();
@@ -137,7 +149,7 @@ static dcConstants initializeDCConstants(int runno, string digiVariation = "defa
 		int cable  = data[row][3] - 1;
 		dcc.T0Correction[sec][sl][slot][cable] = data[row][4];
 	}
-	//********************************************
+	//********************************************//
 	
         snprintf(dcc.database, sizeof(dcc.database),  "/calibration/dc/time_jitter:%d:%s%s", dcc.runNo, digiVariation.c_str(), timestamp.c_str());
         data.clear();
@@ -304,7 +316,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	double thisMgnf = 0;
 	
 	//Quantities needed for the calculation of alpha:
-	//******************************************************************
+	//******************************************************************//
 	double alpha = 0;
 	double rotate_to_sec = (-60*SECI)*deg; //Rotation towards fireing sector
 	
@@ -370,7 +382,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 			
 		}
 	}
-	//******************************************************************
+	//******************************************************************//
 	
 	// percentage distance from the wire
 	double X = (doca/cm) / (2*dcc.dLayer[SLI]);
@@ -396,6 +408,8 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	
 	int ineff = 1;
 	if(random < ddEff || X > 1) ineff = -1;
+
+	int status = dcc.status[SECI][SLI*6+LAYI][nwire-1];
 	
 	// recording smeared and un-smeared quantities
 	dgtz["hitn"]       = hitn;
@@ -406,7 +420,7 @@ map<string, double> dc_HitProcess :: integrateDgt(MHit* aHit, int hitn)
 	dgtz["TDC_TDC"]    = smeared_time;
 	
 	// decide if write an hit or not based on inefficiency value
-	rejectHitConditions=(ineff==-1);
+	rejectHitConditions=(ineff==-1 || status!=0);
 
 	// define conditions to reject hit
 	if(rejectHitConditions) {
