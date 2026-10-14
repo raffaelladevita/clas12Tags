@@ -11,7 +11,7 @@ sub define_hit
 	$hit{"description"}     = "dc hit definitions ";
 	$hit{"identifiers"}     = "sector  superlayer layer wire";
 	$hit{"signalThreshold"} = "0.1*KeV";
-	$hit{"timeWindow"}      = "500*ns";
+	$hit{"timeWindow"}      = "250*ns";
 	$hit{"prodThreshold"}   = "1*mm";
 	$hit{"maxStep"}         = "1*mm";
 	$hit{"delay"}           = "50*ns";
